@@ -35,6 +35,7 @@ def load_config():  # 加载FloraBot配置文件函数
     if os.path.isfile("./Config.json"):  # 若文件存在
         with open("./Config.json", "r", encoding="UTF-8") as read_flora_config:
             flora_config = json.loads(read_flora_config.read())
+        update_check = flora_config.get("update_check")
         auto_install = flora_config.get("AutoInstallLibraries")
         connection_type = flora_config.get("ConnectionType")
         flora_api.update({"ConnectionType": connection_type})
@@ -55,6 +56,30 @@ def load_config():  # 加载FloraBot配置文件函数
         print("已生成一个新的配置文件 Config.json , 请修改后再次启动 FloraBot")
         exit()
 
+def updata_check(update_url, version, update_check_status):
+    try:
+        import requests
+        if update_check_status == True:
+            print(f"开始检查更新，当前版本：{version}")
+            requests =requests.get(update_url)
+            if requests.status_code == 200:
+                data = requests.json()
+                if not data['version'] == version:
+                    print(f"发现新版本：{data['version']}")
+                    print(f"更新内容：{data['content']}")
+                    return True
+                else:
+                    print("当前已是最新版本")
+                    return False
+            else:
+                print("更新服务器连接失败，请稍后再试")
+                return False
+        else:
+            print("更新检查未开启")
+            return False
+    except Exception as e:
+        print(f"更新检查失败：{e}")
+        return False
 
 def send_msg(send_type: str, msg: str, uid: str | int, gid: str | int | None, mid: str | int | None = None, ws_client=None, ws_server=None, send_host: str = "", send_port: int | str = ""):
     # 发送消息函数,send_type: 发送类型,决定是用HTTP还是WebSocket发送消息
